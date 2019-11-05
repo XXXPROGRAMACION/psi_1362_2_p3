@@ -1,17 +1,40 @@
 from django.db import models
 from django.contrib.auth.models import User
-from enum import Enum
+from enum import IntEnum
+from django.core.exceptions import ValidationError
+
+INVALID_CELL = 'Invalid cell for a cat or the mouse|Gato o ratón en posición no válida'
 
 
-class GameStatus(Enum):
+class GameStatus(IntEnum):
     CREATED = 0
     ACTIVE = 1
     FINISHED = 2
 
+    def __str__(self):
+        if self == GameStatus.CREATED:
+            return 'Created'
+        elif self == GameStatus.ACTIVE:
+            return 'Active'
+        elif self == GameStatus.FINISHED:
+            return 'Finished'
+        else:
+            return 'Error'
+
 
 class Game(models.Model):
-    cat_user = models.ForeignKey(User, on_delete=models.CASCADE)
-    mouse_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    cat_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='games_as_cat'
+    )
+    mouse_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='games_as_mouse',
+        null=True,
+        blank=True
+    )
     cat1 = models.IntegerField(default=0, null=False)
     cat2 = models.IntegerField(default=2, null=False)
     cat3 = models.IntegerField(default=4, null=False)
@@ -20,30 +43,47 @@ class Game(models.Model):
     cat_turn = models.BooleanField(default=True, null=False)
     status = models.IntegerField(default=GameStatus.CREATED, null=False)
 
+    MIN_CELL = 0
+    MAX_CELL = 63
+
     def save(self, *args, **kwargs):
-        if getattr(self, 'cat1') < 0 or getattr(self, 'cat1') > 63:
-            return
-        if getattr(self, 'cat2') < 0 or getattr(self, 'cat2') > 63:
-            return
-        if getattr(self, 'cat3') < 0 or getattr(self, 'cat3') > 63:
-            return
-        if getattr(self, 'cat4') < 0 or getattr(self, 'cat4') > 63:
-            return
-        if getattr(self, 'mouse') < 0 or getattr(self, 'mouse') > 63:
-            return
-        if getattr(self, 'cat1') % 2 is not getattr(self, 'cat1')/8 % 2:
-            return
-        if getattr(self, 'cat2') % 2 is not getattr(self, 'cat2')/8 % 2:
-            return
-        if getattr(self, 'cat3') % 2 is not getattr(self, 'cat3')/8 % 2:
-            return
-        if getattr(self, 'cat4') % 2 is not getattr(self, 'cat4')/8 % 2:
-            return
-        if getattr(self, 'mouse') % 2 is not getattr(self, 'mouse')/8 % 2:
-            return
+        if self.cat1 < 0 or self.cat1 > 63:
+            raise ValidationError(INVALID_CELL)
+        if self.cat2 < 0 or self.cat2 > 63:
+            raise ValidationError(INVALID_CELL)
+        if self.cat3 < 0 or self.cat3 > 63:
+            raise ValidationError(INVALID_CELL)
+        if self.cat4 < 0 or self.cat4 > 63:
+            raise ValidationError(INVALID_CELL)
+        if self.mouse < 0 or self.mouse > 63:
+            raise ValidationError(INVALID_CELL)
+        if self.cat1%2 != self.cat1//8%2:
+            raise ValidationError(INVALID_CELL)
+        if self.cat2%2 != self.cat2//8%2:
+            raise ValidationError(INVALID_CELL)
+        if self.cat3%2 != self.cat3//8%2:
+            raise ValidationError(INVALID_CELL)
+        if self.cat4%2 != self.cat4//8%2:
+            raise ValidationError(INVALID_CELL)
+        if self.mouse%2 != self.mouse//8%2:
+            raise ValidationError(INVALID_CELL)
         if GameStatus(self.status) is None:
-            return
+            raise ValidationError('status can not be None')
         super(Game, self).save(*args, **kwargs)
+
+    class Meta:
+        app_label = 'datamodel'
+        
+    def __str__(self):
+        message = (
+            '(%d, %s)' % (self.id, self.status) +
+            '\tCat [%c] %s(%d, %d, %d, %d)' % (('X' if self.cat_turn else ' '), self.cat_user, self.cat1, self.cat2, self.cat3, self.cat4)
+        )
+
+        if self.mouse_user is not None:
+            message += ' --- Mouse [%c] %s(%d)' % (('X' if not self.cat_turn else ' '), self.mouse_user, self.mouse)
+
+        return message
 
 
 class Move(models.Model):
@@ -54,12 +94,15 @@ class Move(models.Model):
     date = models.DateField(null=False)
 
     def save(self, *args, **kwargs):
-        if getattr(self, 'origin') < 0 or getattr(self, 'origin') > 63:
+        if self.origin < 0 or self.origin > 63:
             return
-        if getattr(self, 'target') < 0 or getattr(self, 'target') > 63:
+        if self.target < 0 or self.target > 63:
             return
-        if getattr(self, 'origin') % 2 is not getattr(self, 'origin')/8 % 2:
+        if self.origin%2 is not self.origin//8%2:
             return
-        if getattr(self, 'target') % 2 is not getattr(self, 'target')/8 % 2:
+        if self.target%2 is not self.target//8%2:
             return
         super(Move, self).save(*args, **kwargs)
+    
+    class Meta:
+        app_label = 'datamodel'

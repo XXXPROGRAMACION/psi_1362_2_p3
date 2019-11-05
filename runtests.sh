@@ -1,0 +1,1 @@
+python3 ./manage.py test datamodel.tests_models.GameModelTests
