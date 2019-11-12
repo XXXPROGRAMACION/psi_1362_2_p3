@@ -46,16 +46,26 @@ class Game(models.Model):
     MIN_CELL = 0
     MAX_CELL = 63
 
+    def __init__(self, *args, **kwargs):
+        super(Game, self).__init__(*args, **kwargs)
+        self.validate()
+
     def save(self, *args, **kwargs):
-        if self.cat1 < 0 or self.cat1 > 63:
+        self.validate()
+        if self.status is GameStatus.CREATED and self.mouse_user is not None:
+            self.status = GameStatus.ACTIVE
+        super(Game, self).save(*args, **kwargs)
+
+    def validate(self):
+        if self.cat1 < Game.MIN_CELL or self.cat1 > Game.MAX_CELL:
             raise ValidationError(INVALID_CELL)
-        if self.cat2 < 0 or self.cat2 > 63:
+        if self.cat2 < Game.MIN_CELL or self.cat2 > Game.MAX_CELL:
             raise ValidationError(INVALID_CELL)
-        if self.cat3 < 0 or self.cat3 > 63:
+        if self.cat3 < Game.MIN_CELL or self.cat3 > Game.MAX_CELL:
             raise ValidationError(INVALID_CELL)
-        if self.cat4 < 0 or self.cat4 > 63:
+        if self.cat4 < Game.MIN_CELL or self.cat4 > Game.MAX_CELL:
             raise ValidationError(INVALID_CELL)
-        if self.mouse < 0 or self.mouse > 63:
+        if self.mouse < Game.MIN_CELL or self.mouse > Game.MAX_CELL:
             raise ValidationError(INVALID_CELL)
         if self.cat1%2 != self.cat1//8%2:
             raise ValidationError(INVALID_CELL)
@@ -69,7 +79,6 @@ class Game(models.Model):
             raise ValidationError(INVALID_CELL)
         if GameStatus(self.status) is None:
             raise ValidationError('status can not be None')
-        super(Game, self).save(*args, **kwargs)
 
     class Meta:
         app_label = 'datamodel'
@@ -94,9 +103,9 @@ class Move(models.Model):
     date = models.DateField(null=False)
 
     def save(self, *args, **kwargs):
-        if self.origin < 0 or self.origin > 63:
+        if self.origin < Game.MIN_CELL or self.origin > Game.MAX_CELL:
             return
-        if self.target < 0 or self.target > 63:
+        if self.target < Game.MIN_CELL or self.target > Game.MAX_CELL:
             return
         if self.origin%2 is not self.origin//8%2:
             return
