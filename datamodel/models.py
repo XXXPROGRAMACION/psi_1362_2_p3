@@ -127,3 +127,32 @@ class Move(models.Model):
 
     class Meta:
         app_label = 'datamodel'
+
+
+class CounterManager(models.Manager):
+
+    def get_current_value(self):
+        try:
+            return self.get(pk=1).value
+        except:
+            return 0
+
+    def inc(self):
+        try:
+            counter = self.get(pk=1)
+        except:
+            counter = Counter(pk=1)
+        counter.value += 1
+        super(Counter, counter).save()
+        return counter.value
+
+
+class Counter(models.Model):
+    value = models.IntegerField(null=False, default=0)
+    objects = CounterManager()
+
+    def save(self, *args, **kwargs):
+        raise ValidationError(MSG_ERROR_NEW_COUNTER)
+
+    def delete(self, *args, **kwargs):
+        pass

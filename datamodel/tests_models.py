@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from . import tests
-from datamodel.models import Game, GameStatus, Move
+from datamodel.models import Game, GameStatus, Move, Counter
 
 
 class GameModelTests(tests.BaseModelTest):

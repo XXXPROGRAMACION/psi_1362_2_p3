@@ -1,20 +1,23 @@
 from django.http import HttpResponseForbidden
 from django.shortcuts import render
 
-from datamodel import constants
+#from datamodel import constants
+
+def index(request):
+    return render(request, "mouse_cat/index.html")
 
 
-def anonymous_required(f):
+""" def anonymous_required(f):
     def wrapped(request):
         if request.user.is_authenticated:
             return HttpResponseForbidden(
                 errorHTTP(request, exception="Action restricted to anonymous users"))
         else:
             return f(request)
-    return wrapped
+    return wrapped """
 
 
-def errorHTTP(request, exception=None):
+""" def errorHTTP(request, exception=None):
     context_dict = {}
     context_dict[constants.ERROR_MESSAGE_ID] = exception
-    return render(request, "mouse_cat/error.html", context_dict)
+    return render(request, "mouse_cat/error.html", context_dict) """
