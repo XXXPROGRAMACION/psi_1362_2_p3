@@ -3,11 +3,8 @@ from django.contrib.auth.models import User
 from enum import IntEnum
 from django.core.exceptions import ValidationError
 from datetime import datetime
+from datamodel import constants
 
-MSG_ERROR_INVALID_CELL = "Invalid cell for a cat or the mouse|Gato o ratón en posición no válida"
-MSG_ERROR_GAMESTATUS = "Game status not valid|Estado no válido"
-MSG_ERROR_MOVE = "Move not allowed|Movimiento no permitido"
-MSG_ERROR_NEW_COUNTER = "Insert not allowed|Inseción no permitida"
 
 class GameStatus(IntEnum):
     CREATED = 0
@@ -61,27 +58,27 @@ class Game(models.Model):
 
     def validate(self):
         if self.cat1 < Game.MIN_CELL or self.cat1 > Game.MAX_CELL:
-            raise ValidationError(MSG_ERROR_INVALID_CELL)
+            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
         if self.cat2 < Game.MIN_CELL or self.cat2 > Game.MAX_CELL:
-            raise ValidationError(MSG_ERROR_INVALID_CELL)
+            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
         if self.cat3 < Game.MIN_CELL or self.cat3 > Game.MAX_CELL:
-            raise ValidationError(MSG_ERROR_INVALID_CELL)
+            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
         if self.cat4 < Game.MIN_CELL or self.cat4 > Game.MAX_CELL:
-            raise ValidationError(MSG_ERROR_INVALID_CELL)
+            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
         if self.mouse < Game.MIN_CELL or self.mouse > Game.MAX_CELL:
-            raise ValidationError(MSG_ERROR_INVALID_CELL)
+            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
         if self.cat1%2 != self.cat1//8%2:
-            raise ValidationError(MSG_ERROR_INVALID_CELL)
+            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
         if self.cat2%2 != self.cat2//8%2:
-            raise ValidationError(MSG_ERROR_INVALID_CELL)
+            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
         if self.cat3%2 != self.cat3//8%2:
-            raise ValidationError(MSG_ERROR_INVALID_CELL)
+            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
         if self.cat4%2 != self.cat4//8%2:
-            raise ValidationError(MSG_ERROR_INVALID_CELL)
+            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
         if self.mouse%2 != self.mouse//8%2:
-            raise ValidationError(MSG_ERROR_INVALID_CELL)
+            raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
         if GameStatus(self.status) is None:
-            raise ValidationError(MSG_ERROR_GAMESTATUS)
+            raise ValidationError(constants.MSG_ERROR_GAMESTATUS)
 
     class Meta:
         app_label = 'datamodel'
@@ -115,15 +112,15 @@ class Move(models.Model):
     
     def validate(self):
         if self.origin < Game.MIN_CELL or self.origin > Game.MAX_CELL:
-            raise ValidationError(MSG_ERROR_MOVE)
+            raise ValidationError(constants.MSG_ERROR_MOVE)
         if self.target < Game.MIN_CELL or self.target > Game.MAX_CELL:
-            raise ValidationError(MSG_ERROR_MOVE)
+            raise ValidationError(constants.MSG_ERROR_MOVE)
         if self.origin%2 is not self.origin//8%2:
-            raise ValidationError(MSG_ERROR_MOVE)
+            raise ValidationError(constants.MSG_ERROR_MOVE)
         if self.target%2 is not self.target//8%2:
-            raise ValidationError(MSG_ERROR_MOVE)
+            raise ValidationError(constants.MSG_ERROR_MOVE)
         if self.game.status is not GameStatus.ACTIVE:
-            raise ValidationError(MSG_ERROR_MOVE)
+            raise ValidationError(constants.MSG_ERROR_MOVE)
 
     class Meta:
         app_label = 'datamodel'
@@ -152,7 +149,7 @@ class Counter(models.Model):
     objects = CounterManager()
 
     def save(self, *args, **kwargs):
-        raise ValidationError(MSG_ERROR_NEW_COUNTER)
+        raise ValidationError(constants.MSG_ERROR_NEW_COUNTER)
 
     def delete(self, *args, **kwargs):
         pass
