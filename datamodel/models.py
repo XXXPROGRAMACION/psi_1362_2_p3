@@ -120,6 +120,50 @@ class Move(models.Model):
         if self.target%2 is not self.target//8%2:
             raise ValidationError(constants.MSG_ERROR_MOVE)
 
+        if self.target == self.game.mouse:
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+        if self.target == self.game.cat1:
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+        if self.target == self.game.cat2:
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+        if self.target == self.game.cat3:
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+        if self.target == self.game.cat4:
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+
+        if self.game.status != GameStatus.ACTIVE:
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+    
+        if self.game.cat_turn is True and self.game.cat_user == self.player:
+            if not (self.origin%8 != 0 and self.target == self.origin+7):
+                if not (self.origin%8 != 7 and self.target == self.origin+9):
+                    raise ValidationError(constants.MSG_ERROR_MOVE)
+                    
+            if self.origin == self.game.cat1:
+                self.game.cat1 = self.target
+            elif self.origin == self.game.cat2:
+                self.game.cat2 = self.target
+            elif self.origin == self.game.cat3:
+                self.game.cat3 = self.target
+            elif self.origin == self.game.cat4:
+                self.game.cat4 = self.target
+            else:
+                raise ValidationError(constants.MSG_ERROR_MOVE)
+        elif self.game.cat_turn is False and self.game.mouse_user == self.player:
+            if not (self.origin%8 != 0 and (self.target == self.origin+7 or self.target == self.origin-9)):
+                if not (self.origin%8 != 7 and (self.target == self.origin+9 or self.target == self.origin-7)):
+                    raise ValidationError(constants.MSG_ERROR_MOVE)
+
+            if self.origin == self.game.mouse:
+                self.game.mouse = self.target
+            else:
+                raise ValidationError(constants.MSG_ERROR_MOVE)
+        else:
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+        
+        self.game.cat_turn = not self.game.cat_turn
+        self.game.save()
+
     class Meta:
         app_label = 'datamodel'
 

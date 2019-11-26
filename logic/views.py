@@ -10,20 +10,25 @@ from django.db.models import Q
 from django.views.decorators.http import require_http_methods
 
 
-@require_http_methods(['GET'])
-def index(request):    
-    return render(request, 'mouse_cat/index.html')
+def errorHTTP(request, exception=None):
+    context_dict = {}
+    context_dict[constants.ERROR_MESSAGE_ID] = exception
+    return render(request, 'mouse_cat/error.html', context_dict, status=403)
 
 
 def anonymous_required(f):
     def wrapped(request):
         if request.user.is_authenticated:
-            return HttpResponseForbidden(
-                errorHTTP(request, exception='Action restricted to anonymous users')
-            )
+            # Modificado para evitar el error "connection already closed"
+            return errorHTTP(request, 'Action restricted to anonymous users')
         else:
             return f(request)
     return wrapped
+
+
+@require_http_methods(['GET'])
+def index(request):    
+    return render(request, 'mouse_cat/index.html')
 
 
 @anonymous_required
@@ -48,7 +53,7 @@ def login_service(request):
                 login_form.add_error(None, 'La cuenta indicada se encuentra deshabilitada')
                 return render(request, 'mouse_cat/login.html', context_dict)
         else:
-            login_form.add_error(None, 'Username/password is not valid|Usuario/clave no válidos')
+            login_form.add_error(None, 'Username/password is not valid')
             return render(request, 'mouse_cat/login.html', context_dict)
     else:
         login_form = LoginForm()
@@ -124,7 +129,7 @@ def join_game_service(request):
         game.save()
         context_dict = { 'game': game }
     else:
-        context_dict = { 'msg_error': 'There is no available games|No hay juegos disponibles' }   
+        context_dict = { 'msg_error': 'There is no available games' }   
      
     return render(request, 'mouse_cat/join_game.html', context_dict)
 
@@ -151,7 +156,7 @@ def select_game_service(request, game_id=None):
 @require_http_methods(['GET'])
 def show_game_service(request):
     if 'game_selected' not in request.session:
-        return errorHTTP(request, 'No se ha seleccionado una partida a la que jugar')    
+        return HttpResponseNotFound('No se ha seleccionado una partida a la que jugar')    
 
     game_id = request.session['game_selected']
     games = Game.objects.filter(id=game_id)
@@ -188,13 +193,13 @@ def show_game_service(request):
 @require_http_methods(['POST'])
 def move_service(request):
     if 'game_selected' not in request.session:
-        return errorHTTP(request, 'No se ha seleccionado una partida a la que jugar')    
+        return HttpResponseNotFound('No se ha seleccionado una partida a la que jugar')
 
     game_id = request.session['game_selected']
     games = Game.objects.filter(id=game_id)
 
     if len(games) == 0:
-        return HttpResponseNotFound('La partida seleccionada no es válida') 
+        return HttpResponseNotFound('La partida seleccionada no es válida')
 
     game = games[0]
 
@@ -204,38 +209,14 @@ def move_service(request):
     if game.cat_user != request.user and game.mouse_user != request.user:
         return HttpResponseNotFound('No eres jugador de la partida seleccionada')
 
-    # /!\
-    # Revisar que exista la variable game_selected y que sea una partida válida
-    # Averiguar nombres de los movimientos
-    # /!\
-    player = request.user_form
+    player = request.user
     origin = int(request.POST.get('origin'))
     target = int(request.POST.get('target'))
-    
-    if game.cat_turn is True:
-        # /!\
-        # if ningún game.cat == initial_pos:
-        #     error
-        # /!\
-        # Comprobación de movimientos válidos
-        game.cat1 = target
-        #       ^ No necesariamente el 1
-    else:
-        # /!\
-        # if game.mouse != initial_pos:
-        #     error
-        # /!\
-        # Comprobación de movimientos válidos
-        game.mouse = target
 
-    move = Move(origin=origin, target=target, game=game, player=player)
-    move.save()
-    game.cat_turn = not game.cat_turn
-    game.save()
+    try:
+        move = Move(origin=origin, target=target, game=game, player=player)
+        move.save()
+    except:
+        pass
+
     return redirect(reverse('show_game'))
-
-
-def errorHTTP(request, exception=None):
-    context_dict = {}
-    context_dict[constants.ERROR_MESSAGE_ID] = exception
-    return render(request, 'mouse_cat/error.html', context_dict)
