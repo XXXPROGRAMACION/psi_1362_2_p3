@@ -296,7 +296,8 @@ class LogInOutServiceTests(ServiceBaseTest):
 
     def test3(self):
         """ Solo los usuarios anónimos pueden invocar al servicio """
-        self.validate_anonymous_required(self.client1, LOGIN_SERVICE)
+        """ self.validate_anonymous_required(self.client1, LOGIN_SERVICE) """
+        self.assertTrue(False)
 
     def test4(self):
         """ Identificación de los usuarios autenticados en la página de landing """
@@ -352,7 +353,8 @@ class SignupServiceTests(ServiceBaseTest):
 
     def test1(self):
         """ Solo los usuarios anónimos tienen acceso """
-        self.validate_anonymous_required(self.client1, SIGNUP_SERVICE)
+        """ self.validate_anonymous_required(self.client1, SIGNUP_SERVICE) """
+        self.assertTrue(False)
 
     def test2(self):
         """ Alta correcta de usuarios """
@@ -778,7 +780,7 @@ class MoveServiceTests(PlayGameBaseServiceTests):
         game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
         self.set_game_in_session(self.client1, self.user1, game.id)
         response = self.client.get(reverse(MOVE_SERVICE), follow=True)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 405)
 
     def test3(self):
         """ Secuencia de movimientos válidos """

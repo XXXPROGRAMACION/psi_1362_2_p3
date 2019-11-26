@@ -11,12 +11,12 @@ class GameStatus(IntEnum):
     ACTIVE = 1
     FINISHED = 2
 
-    def __str__(self):
-        if self == GameStatus.CREATED:
+    def to_string(game_status):
+        if game_status == GameStatus.CREATED:
             return 'Created'
-        elif self == GameStatus.ACTIVE:
+        elif game_status == GameStatus.ACTIVE:
             return 'Active'
-        elif self == GameStatus.FINISHED:
+        elif game_status == GameStatus.FINISHED:
             return 'Finished'
         else:
             return 'Error'
@@ -85,7 +85,7 @@ class Game(models.Model):
         
     def __str__(self):
         message = (
-            '(%d, %s)' % (self.id, self.status) +
+            '(%d, %s)' % (self.id, GameStatus.to_string(self.status)) +
             '\tCat [%c] %s(%d, %d, %d, %d)' % (('X' if self.cat_turn else ' '), self.cat_user, self.cat1, self.cat2, self.cat3, self.cat4)
         )
 
@@ -118,8 +118,6 @@ class Move(models.Model):
         if self.origin%2 is not self.origin//8%2:
             raise ValidationError(constants.MSG_ERROR_MOVE)
         if self.target%2 is not self.target//8%2:
-            raise ValidationError(constants.MSG_ERROR_MOVE)
-        if self.game.status is not GameStatus.ACTIVE:
             raise ValidationError(constants.MSG_ERROR_MOVE)
 
     class Meta:
