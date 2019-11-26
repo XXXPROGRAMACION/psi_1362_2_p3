@@ -6,6 +6,7 @@ class SignupForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
     password2 = forms.CharField(widget=forms.PasswordInput())
 
+    # Autor: Víctor Yrazusta Ibarra
     def clean(self):
         if self.cleaned_data['password'] != self.cleaned_data['password2']:
             self._errors['password2'] = ['Password and Repeat password are not the same']

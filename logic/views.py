@@ -10,12 +10,14 @@ from django.db.models import Q
 from django.views.decorators.http import require_http_methods
 
 
+# Autor: Alejandro Pascual Pozo
 def errorHTTP(request, exception=None):
     context_dict = {}
     context_dict[constants.ERROR_MESSAGE_ID] = exception
     return render(request, 'mouse_cat/error.html', context_dict, status=403)
 
 
+# Autor: Víctor Yrazusta Ibarra
 def anonymous_required(f):
     def wrapped(request):
         if request.user.is_authenticated:
@@ -26,11 +28,13 @@ def anonymous_required(f):
     return wrapped
 
 
+# Autor: Alejandro Pascual Pozo
 @require_http_methods(['GET'])
 def index(request):    
     return render(request, 'mouse_cat/index.html')
 
 
+# Autor: Víctor Yrazusta Ibarra
 @anonymous_required
 @require_http_methods(['GET', 'POST'])
 def login_service(request):
@@ -62,6 +66,7 @@ def login_service(request):
         return render(request, 'mouse_cat/login.html', context_dict)
 
 
+# Autor: Alejandro Pascual Pozo
 @login_required
 @require_http_methods(['GET'])
 def logout_service(request):
@@ -70,6 +75,7 @@ def logout_service(request):
     return render(request, 'mouse_cat/logout.html', context_dict)
 
 
+# Autor: Víctor Yrazusta Ibarra
 @anonymous_required
 @require_http_methods(['GET', 'POST'])
 def signup_service(request):
@@ -91,6 +97,7 @@ def signup_service(request):
     return render(request, 'mouse_cat/signup.html', context_dict)
 
 
+# Autor: Alejandro Pascual Pozo
 @require_http_methods(['GET'])
 def counter_service(request):
     inc_counters(request)
@@ -102,6 +109,7 @@ def counter_service(request):
     return render(request, 'mouse_cat/counter.html', context_dict)
 
 
+# Autor: Víctor Yrazusta Ibarra
 def inc_counters(request):
     if 'counter_session' in request.session:
         request.session['counter_session'] += 1
@@ -110,6 +118,7 @@ def inc_counters(request):
     Counter.objects.inc()
 
 
+# Autor: Alejandro Pascual Pozo
 @login_required
 @require_http_methods(['GET'])
 def create_game_service(request):
@@ -119,6 +128,7 @@ def create_game_service(request):
     return render(request, 'mouse_cat/new_game.html', context_dict)
 
 
+# Autor: Víctor Yrazusta Ibarra
 @login_required
 @require_http_methods(['GET'])
 def join_game_service(request):
@@ -134,6 +144,7 @@ def join_game_service(request):
     return render(request, 'mouse_cat/join_game.html', context_dict)
 
 
+# Autor: Alejandro Pascual Pozo
 @login_required
 @require_http_methods(['GET', 'POST'])
 def select_game_service(request, game_id=None):
@@ -152,6 +163,7 @@ def select_game_service(request, game_id=None):
         return render(request, 'mouse_cat/select_game.html', context_dict)
 
 
+# Autor: Víctor Yrazusta Ibarra
 @login_required
 @require_http_methods(['GET'])
 def show_game_service(request):
@@ -181,14 +193,11 @@ def show_game_service(request):
 
     move_form = MoveForm()
     
-    # /!\
-    # En teoría también se necesita el usuario actual, pero no veo que se use en game.html
-    # Falta move_form (?)
-    # /!\
     context_dict = { 'game': game, 'board': board, 'move_form': move_form }
     return render(request, 'mouse_cat/game.html', context_dict)
 
 
+# Autor: Alejandro Pascual Pozo
 @login_required
 @require_http_methods(['POST'])
 def move_service(request):
