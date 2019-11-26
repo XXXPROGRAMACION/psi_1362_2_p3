@@ -52,7 +52,7 @@ class Game(models.Model):
 
     def save(self, *args, **kwargs):
         self.validate()
-        if self.status is GameStatus.CREATED and self.mouse_user is not None:
+        if self.status == GameStatus.CREATED and self.mouse_user is not None:
             self.status = GameStatus.ACTIVE
         super(Game, self).save(*args, **kwargs)
 
